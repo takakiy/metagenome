@@ -24,7 +24,9 @@ $ mkdir cleanup; \
 ## Assembly    SPades
 
 ```
-$ export SPADE_HOME=/home/impact/biotools/local/assembly/SPAdes-3.14.0-Linux/bin
+$ cd ./assembly
+
+export SPADE_HOME=/home/impact/biotools/local/assembly/SPAdes-3.14.0-Linux/bin
 
 read1="../201211/cleanup/usoriyamakoNo5-1-M2_R1_PE.fq";
 $SPADE_HOME/spades.py --pe-1 1 ${read1} --pe-2 1 ${read1/_R1/_R2} -m 200 --careful -k 21,33,55,77,99,127 -o usoriyamakoNo5-1-M2_spd_A1_assembly
@@ -38,8 +40,8 @@ $SPADE_HOME/spades.py --pe-1 1 ${read1} --pe-2 1 ${read1/_R1/_R2} -m 200 --caref
 i="usoriyamakoNo5-1-M2_spd_A1_assembly.fas"; \
 gc_contentSkew.pl -if $i -p gc; \
 perl -F'\t' -anle 'BEGIN{$info={}; $info->{max}= 0; $info->{min}= 0} next if ($F[1] !~ /^\d+$/); ($con,$clen,$cgc,$ccov)=(@F[0,1,3],0); next if ($clen < 500 || $ccov < 0); $info->{count}++; push @{$info->{lens}},$clen; $info->{sumlen}+= $clen; $info->{sumgc}+= $clen*$cgc; $info->{sumcov}+= $clen*$ccov; END{ @sortlen= sort{$b<=>$a}@{$info->{lens}}; print "COUNT:\t$info->{count}"; print "SUM:\t$info->{sumlen}"; print "MIN:\t$sortlen[-1]"; print "MAX:\t@sortlen[0..9]"; print "AVE:\t".sprintf("%d",$info->{sumlen}/$info->{count}); foreach (@sortlen) {$info->{N50}+= $_; if ($info->{N50} > $info->{sumlen}/2) { $N50=$_; last; }  } print "N50:\t$N50"; print "GC:\t".sprintf("%.4f",$info->{sumgc}/$info->{sumlen}); print "Cov:\t".sprintf("%.4f",$info->{sumcov}/$info->{sumlen});}' outgc
-
 ##****** ****** ****** ****** ******
+
 ##****** STATICS OF CONTIGS FROM TABLE ********
 # i="usoriyamakoNo5-1-M2_spd_A1_assembly_gc.txt"; \
 perl -F'\t' -anle 'BEGIN{$info={}; $info->{max}= 0; $info->{min}= 0} next if ($F[1] !~ /^\d+$/); ($con,$clen,$ccov,$cgc)=@F[0,1,6,3]; next if ($clen < 500 || $ccov < 0); $info->{count}++; push @{$info->{lens}},$clen; $info->{sumlen}+= $clen; $info->{sumgc}+= $clen*$cgc; $info->{sumcov}+= $clen*$ccov; END{ @sortlen= sort{$b<=>$a}@{$info->{lens}}; print "COUNT:\t$info->{count}"; print "SUM:\t$info->{sumlen}"; print "MIN:\t$sortlen[-1]"; print "MAX:\t@sortlen[0..9]"; print "AVE:\t".sprintf("%d",$info->{sumlen}/$info->{count}); foreach (@sortlen) {$info->{N50}+= $_; if ($info->{N50} > $info->{sumlen}/2) { $N50=$_; last; } } print "N50:\t$N50"; print "GC:\t".sprintf("%.4f",$info->{sumgc}/$info->{sumlen}); print "Cov:\t".sprintf("%.4f",$info->{sumcov}/$info->{sumlen});}' $i
@@ -83,4 +85,35 @@ axis(4)
 
 ```
 
-## 
+## Gene (Protein) detection    Prodigal
+
+
+```
+$ cd ./genefind
+
+ref="../assembly/usoriyamakoNo5-1_spd_A1_assembly.fas"; \
+name="usoriyamakoNo5-1"; \
+$HOME/biotools/local/genome/Prodigal/prodigal -i $ref -m -a ${name}.orfs.faa -d ${name}.orfs.fna -o ${name}.gbk -f gbk -p meta -q
+
+
+
+```
+##==> usoriyamakoNo5-1.gbk
+           usoriyamakoNo5-1.orfs.faa
+           usoriyamakoNo5-1.orfs.fna
+
+
+```
+## CONVERT gbk TO GENELIST  ## FIX complete=1 partial=3
+##*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***  
+$  name="usoriyamakoNo5-1"; \
+  echo -e "#Con\tlen\ttype\tID\tGENE\tdir\tST\tED\tseq_id\tcds_id\tCAT\tFIX\tEC\tNOTE\tAA" > ${name}_genelist; \
+ perl -F'\t' -anle 'BEGIN{ $info={}; $no= 0; } if (/^DEFINITION  seqnum\=(\d+)\;seqlen\=(\d+)\;seqhdr\=\"(\S+?)\"\;/) { $ctg= $3; $cid= $1; $clen= $2; } elsif (/^\s+CDS\s+/) {  $no++;  if(/<?(\d+)\.\.>?(\d+)/) { ($st,$ed)=($1,$2); } $dir= /complement\(/ ? "-" : "+"; push @{$info->{$ctg}->{cds}},[$cid,$ctg,$clen,"CDS",$dir,$st,$ed]; } elsif (/note\=\"ID\=(.+?)\;/) { push @{$info->{$ctg}->{cds}->[-1]},$1; $comp= /partial=00/ ? 1 : 3; push @{$info->{$ctg}->{cds}->[-1]},$comp; }  END{ foreach $ctg (sort keys %{$info} ) { foreach (@{$info->{$ctg}->{cds}}) { $cds_no= $1 if ($$_[7] =~ /\d+_(\d+)/); $aalen=($$_[6]-$$_[5]-2)/3; print (join "\t",(@$_[1..3],"$$_[1]_$cds_no","",@$_[4,5,6],$$_[0],$$_[7],"A",$$_[8],"","",$aalen)); } }   }' ${name}.gbk >> ${name}_genelist
+
+##*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***  
+
+# ==> usoriyamakoNo5-1_genelist
+
+```
+
+
