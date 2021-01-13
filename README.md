@@ -117,7 +117,7 @@ $  name="usoriyamakoNo5-1"; \
 ```
 
 
-##   checkm
+##   Comparem
 
 
 仮想環境
@@ -162,5 +162,51 @@ glist="comp_genome_pep1.lst"
  ##==> ./aai_output1/aai_summary.tsv
 
 
+
+```
+
+
+
+## BLAST+
+
+```
+##   BLASTN
+#**** **** **** **** **** **** **** **** 
+  QUERY="RF00195_AY780887.1_24-141.fasta"; \
+  DB="methR7_smrt_A1_pilon_IV.fa"; \
+
+
+  $HOME/biotools/local/homology/ncbi-blast/bin/makeblastdb -in $DB -out $DB -dbtype nucl; \
+  $HOME/biotools/local/homology/ncbi-blast/bin/blastn -query $QUERY -db $DB -out m_blastnout -evalue 1e-5 -dust no -num_threads 12; \
+ exe_blastn_hit_plus_n.pl -r m_blastnout -s F -lh 70 -l 100 -n 1 -o hitlist_blastnout.txt; \
+ awk '{FS="\t"}$1 ~ /^(A|b|s|[0-9]|#Query)/{print}' hitlist_blastnout.txt > hitlist_blastnoutS.txt
+
+#**** **** **** **** **** **** **** **** 
+
+
+##   tBLASTn
+#**** **** **** **** **** **** **** **** 
+  QUERY="lanmodulin.txt"; \
+  DB="methR7IV.fasta"; \
+
+  $HOME/biotools/local/homology/ncbi-blast/bin/makeblastdb -in $DB -out $DB -dbtype nucl; \
+  $HOME/biotools/local/homology/ncbi-blast/bin/tblastn -query $QUERY -db $DB -out m_blastpout -evalue 1e-5 -seg no -num_threads 12; \
+ exe_blastx_hit_plus.pl -r m_blastpout -s T -lh 70 -n 0 -o hitlist_blastxout.txt
+# awk '{FS="\t"}$1 ~ /^(b|I|O|#Query)/{print}' hitlist_blastpout.txt > hitlist_blastpoutS.txt
+ more hitlist_blastxout.txt
+
+#**** **** **** **** **** **** **** **** 
+
+##  BLASTP (PEP->PEP)
+#**** **** **** **** **** **** **** **** 
+  QUERY="lanmodulin.txt";
+ DB="methR7IV_cds.pep"; \
+
+  $HOME/biotools/local/homology/ncbi-blast/bin/makeblastdb -in $DB -out $DB -dbtype prot; 
+  $HOME/biotools/local/homology/ncbi-blast/bin/blastp -query $QUERY -db $DB -out m_blastpout -evalue 1e-5 -seg no -num_threads 12 -num_descriptions 100 -num_alignments 100; 
+ exe_blastp_hit_plus.pl -r m_blastpout -s F -lh 20 -n 0 -o hitlist_blastpout.txt
+ awk '{FS="\t"}$1 ~ /^(B|b|O|[0-9]|#Query)/{print}' hitlist_blastpout.txt > hitlist_blastpoutS.txt
+
+#**** **** **** **** **** **** **** **** 
 
 ```
