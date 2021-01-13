@@ -123,7 +123,7 @@ $  name="usoriyamakoNo5-1"; \
 仮想環境
 
 ```
-$ export PATH="/home/impact/biotools/rhel6/miniconda3/bin:$PATH"
+$ export PATH="(Your environment)/miniconda3/bin:$PATH"
 
 #bioconda(link)python3 仮想環境に入れる
 $ conda create -n comparem
@@ -131,7 +131,7 @@ $ conda create -n comparem
  conda info -e
 
 ##  開始
-$ source activate comparem
+$ conda activate comparem
 (comparem) $ pip install comparem
 
     !!!!!!!  OK
@@ -140,15 +140,18 @@ $ source activate comparem
 ##  comparem 環境開始
 $ source activate comparem
 (comparem) $
-(comparem) $ export PATH="/home/bioresource/biotools/local/genome/Prodigal:$HOME/biotools/local/homology/diamond-0.8.22:$PATH"
+(comparem) $ export PATH="/home/impact/biotools/local/genome/Prodigal:$HOME/biotools/local/homology/diamond-0.9.17:$PATH"
+
+###  comp_genome_pep1.lst
+./data/GCA_000016725.faa
+./data/GCA_900156265.faa
+./data/GCA_000202835.faa
+./data/GCF_000701585.faa
+./data/usoriyamakoNo5.faa
+
 
 ##*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***  
 glist="comp_genome_pep1.lst"
-##./data/IN45.faa
-##./data/IT9.faa
-glist="comp_genome_pep2.lst"
-
-glist="comp_genome_pep3.lst"
 
 ### QUERY_LIST TARGET_LIST OUTPUTS
   (comparem) $ output="aai_output3"; \
